@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Password Generator</string>
+
+    <string name="refresh">Refresh</string>
+    <string name="save">Save</string>
+    <string name="copy">Copy</string>
+    <string name="saved">Saved</string>
+    <string name="controls">Controls</string>
+
+    <!-- Controls -->
+    <string name="uppercase">Uppercase Letters (ABCD&#8230;)</string>
+    <string name="lowercase">Lowercase Letters (abcd&#8230;)</string>
+    <string name="numbers">Numbers (123&#8230;)</string>
+    <string name="symbols">Symbols (+/?&gt;;&amp;&lt;&#8230;)</string>
+    <string name="length">Length</string>
+    <string name="initialLength">8</string>
+
 </resources>
