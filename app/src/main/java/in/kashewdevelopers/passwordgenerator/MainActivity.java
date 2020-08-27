@@ -1,20 +1,30 @@
 package in.kashewdevelopers.passwordgenerator;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
     ConstraintLayout controls;
     SeekBar passwordLengthChanger;
     TextView passwordLengthTV;
+
+    // navigation drawer elements
+    DrawerLayout drawerLayout;
+    ImageView clearListButton;
+    TextView noSavedPasswords;
+    ListView savedList;
+    ConstraintLayout navigationDrawer;
+    ActionBarDrawerToggle drawerToggle;
 
     // control variables
     int minPasswordLength = 5;
@@ -46,6 +64,14 @@ public class MainActivity extends AppCompatActivity {
 
     // toasts
     Toast pressBackAgainToast, savedToast, copiedToast, copyErrorToast;
+    boolean backPressed = false;
+
+    // suggestion db
+    private SavedDbHelper dbHelper;
+    private SQLiteDatabase db;
+    SavedAdapter adapter;
+    Cursor cursor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,46 +92,76 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.saved) {
-            Toast.makeText(this, "Open Saved", Toast.LENGTH_SHORT).show();
+            if (drawerLayout.isDrawerOpen(GravityCompat.START))
+                drawerLayout.closeDrawer(GravityCompat.START);
+            else
+                drawerLayout.openDrawer(GravityCompat.START);
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            if (backPressed) {
+                pressBackAgainToast.cancel();
+                savedToast.cancel();
+                copiedToast.cancel();
+                copyErrorToast.cancel();
+
+                super.onBackPressed();
+                return;
+            }
+
+            backPressed = true;
+            pressBackAgainToast.show();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    backPressed = false;
+                }
+            }, 2000);
+        }
     }
 
 
     // functionality
-    @SuppressLint("ShowToast")
     public void initialize() {
+        initializeWidgets();
+        initializeToasts();
+        initializeDb();
+
+        controls.setVisibility(View.GONE);
+
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
+                R.string.drawer_open, R.string.drawer_close);
+        drawerLayout.addDrawerListener(drawerToggle);
+
+        setPasswordLengthChangeListener();
+        setPasswordDeleteListener();
+        setPasswordClickListener();
+    }
+
+    public void initializeWidgets() {
         password = findViewById(R.id.password);
         controlIcon = findViewById(R.id.controlIcon);
         controls = findViewById(R.id.controls);
         passwordLengthChanger = findViewById(R.id.passwordLength);
         passwordLengthTV = findViewById(R.id.passwordLengthCount);
 
-        passwordLengthChanger.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                passwordLengthTV.setText(String.valueOf(progress + minPasswordLength));
-                passwordLength = minPasswordLength + progress;
-                generatePassword();
-            }
+        // navigation ui
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationDrawer = findViewById(R.id.slider);
+        clearListButton = findViewById(R.id.clear_saved);
+        noSavedPasswords = findViewById(R.id.no_saved_pswd);
+        savedList = findViewById(R.id.saved_list);
+    }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
-        controls.setVisibility(View.GONE);
-
-        // toasts
+    @SuppressLint("ShowToast")
+    public void initializeToasts() {
         pressBackAgainToast = Toast.makeText(this, R.string.back_press, Toast.LENGTH_SHORT);
         pressBackAgainToast.setGravity(Gravity.CENTER, 0, 0);
 
@@ -117,6 +173,29 @@ public class MainActivity extends AppCompatActivity {
 
         copyErrorToast = Toast.makeText(this, R.string.copy_error, Toast.LENGTH_SHORT);
         copyErrorToast.setGravity(Gravity.CENTER, 0, 0);
+    }
+
+    public void initializeDb() {
+        dbHelper = new SavedDbHelper(this);
+        try {
+            db = dbHelper.getReadableDatabase();
+            cursor = dbHelper.get(db);
+
+            adapter = new SavedAdapter(this, cursor, 0);
+
+            savedList.setAdapter(adapter);
+
+            if (cursor.getCount() == 0) {
+                noSavedPasswords.setVisibility(View.VISIBLE);
+                clearListButton.setVisibility(View.GONE);
+            } else {
+                noSavedPasswords.setVisibility(View.GONE);
+                clearListButton.setVisibility(View.VISIBLE);
+            }
+        } catch (Exception e) {
+            db = null;
+            Log.d("KashewDevelopers", "Error : " + e.getMessage());
+        }
     }
 
     public void generatePassword() {
@@ -140,6 +219,49 @@ public class MainActivity extends AppCompatActivity {
         password.setText(randomString);
     }
 
+    public void deleteAllSavedPasswords() {
+        if (dbHelper == null || db == null)
+            return;
+
+        dbHelper.deleteAll(db);
+
+        cursor = dbHelper.get(db);
+        adapter.swapCursor(cursor);
+        adapter.notifyDataSetChanged();
+
+        if (cursor.getCount() == 0) {
+            noSavedPasswords.setVisibility(View.VISIBLE);
+            clearListButton.setVisibility(View.GONE);
+        } else {
+            noSavedPasswords.setVisibility(View.GONE);
+            clearListButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void deleteSavedPasswords(String password) {
+        if (dbHelper == null || db == null)
+            return;
+
+        dbHelper.delete(db, password);
+
+        cursor = dbHelper.get(db);
+        adapter.swapCursor(cursor);
+        adapter.notifyDataSetChanged();
+
+        if (cursor.getCount() == 0) {
+            noSavedPasswords.setVisibility(View.VISIBLE);
+            clearListButton.setVisibility(View.GONE);
+        } else {
+            noSavedPasswords.setVisibility(View.GONE);
+            clearListButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void showPassword(String pass) {
+        drawerLayout.closeDrawer(GravityCompat.START);
+        password.setText(pass);
+    }
+
 
     // handle widget clicks
     public void copyClicked(View view) {
@@ -156,7 +278,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveClicked(View view) {
+        if (dbHelper == null || db == null)
+            return;
 
+        String pswd = password.getText().toString();
+        dbHelper.insert(db, pswd);
+
+        cursor = dbHelper.get(db);
+        adapter.swapCursor(cursor);
+        adapter.notifyDataSetChanged();
+
+        savedToast.show();
+
+        if (cursor.getCount() == 0) {
+            noSavedPasswords.setVisibility(View.VISIBLE);
+            clearListButton.setVisibility(View.GONE);
+        } else {
+            noSavedPasswords.setVisibility(View.GONE);
+            clearListButton.setVisibility(View.VISIBLE);
+        }
     }
 
     public void shareClicked(View view) {
@@ -198,6 +338,69 @@ public class MainActivity extends AppCompatActivity {
     public void symbolsClicked(View view) {
         includeSymbols = ((CheckBox) view).isChecked();
         generatePassword();
+    }
+
+    public void clearSavedClicked(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.delete_all);
+        builder.setMessage(R.string.are_u_sure);
+        builder.setNegativeButton(R.string.cancel, null);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteAllSavedPasswords();
+            }
+        });
+        builder.show();
+    }
+
+
+    // listeners
+    public void setPasswordLengthChangeListener() {
+        passwordLengthChanger.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                passwordLengthTV.setText(String.valueOf(progress + minPasswordLength));
+                passwordLength = minPasswordLength + progress;
+                generatePassword();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+    }
+
+    public void setPasswordDeleteListener() {
+        adapter.setOnDeleteClickListener(new SavedAdapter.OnDeleteClickListener() {
+            @Override
+            public void onDeleteClickListener(final String password) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.delete);
+                builder.setMessage(R.string.are_u_sure);
+                builder.setNegativeButton(R.string.cancel, null);
+                builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteSavedPasswords(password);
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    public void setPasswordClickListener() {
+        adapter.setOnPasswordClickListener(new SavedAdapter.OnPasswordClickListener() {
+            @Override
+            public void onPasswordClickListener(String password) {
+                showPassword(password);
+            }
+        });
     }
 
 }

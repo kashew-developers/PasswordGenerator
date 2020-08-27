@@ -1,13 +1,21 @@
 <resources>
     <string name="app_name">Password Generator</string>
 
+    <!-- Buttons -->
     <string name="refresh">Refresh</string>
     <string name="save">Save</string>
     <string name="copy">Copy</string>
     <string name="share">Share</string>
     <string name="saved">Saved</string>
+
+    <!-- Labels -->
     <string name="controls">Controls</string>
     <string name="share_with">Share With</string>
+    <string name="no_saved_pswd">No Saved Passwords!</string>
+
+    <!-- Drawer -->
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
 
     <!-- Controls -->
     <string name="uppercase">Uppercase Letters (ABCD&#8230;)</string>
@@ -23,4 +31,9 @@
     <string name="copy_error">Error Copying password</string>
     <string name="saved_password">Password Saved</string>
 
+    <!-- Dialogs -->
+    <string name="delete_all">Delete All</string>
+    <string name="delete">Delete</string>
+    <string name="are_u_sure">Are you sure?</string>
+    <string name="cancel">Cancel</string>
 </resources>
