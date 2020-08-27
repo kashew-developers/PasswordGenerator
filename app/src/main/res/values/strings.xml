@@ -4,15 +4,23 @@
     <string name="refresh">Refresh</string>
     <string name="save">Save</string>
     <string name="copy">Copy</string>
+    <string name="share">Share</string>
     <string name="saved">Saved</string>
     <string name="controls">Controls</string>
+    <string name="share_with">Share With</string>
 
     <!-- Controls -->
     <string name="uppercase">Uppercase Letters (ABCD&#8230;)</string>
     <string name="lowercase">Lowercase Letters (abcd&#8230;)</string>
     <string name="numbers">Numbers (123&#8230;)</string>
-    <string name="symbols">Symbols (+/?&gt;;&amp;&lt;&#8230;)</string>
+    <string name="symbols">Symbols (!"#$%&amp;'()*+,-./:;&gt;=&lt;?@[\]^_`{|})</string>
     <string name="length">Length</string>
     <string name="initialLength">8</string>
+
+    <!-- toasts -->
+    <string name="back_press">Press Back Again to exit</string>
+    <string name="copied">Copied to clipboard</string>
+    <string name="copy_error">Error Copying password</string>
+    <string name="saved_password">Password Saved</string>
 
 </resources>

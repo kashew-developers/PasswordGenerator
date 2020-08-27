@@ -24,13 +24,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="50dp"
                 android:layout_marginEnd="10dp"
+                android:fontFamily="@font/ubuntu_condensed"
                 android:gravity="center"
-                android:minLines="2"
+                android:letterSpacing="0.1"
+                android:minLines="4"
                 android:paddingStart="3dp"
                 android:paddingEnd="3dp"
                 android:text="@string/app_name"
                 android:textColor="@color/primaryTextColor"
                 android:textSize="22sp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@id/refreshButton"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -48,24 +51,23 @@
                 android:src="@drawable/refresh_icon"
                 app:layout_constraintBottom_toBottomOf="@id/password"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/password"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintTop_toTopOf="@id/password" />
 
             <!-- copy section -->
             <LinearLayout
                 android:id="@+id/copySection"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="50dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="5dp"
                 android:background="@drawable/button_design"
                 android:clickable="true"
                 android:elevation="5dp"
                 android:focusable="true"
                 android:gravity="center"
                 android:onClick="copyClicked"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:padding="10dp"
                 app:layout_constraintEnd_toStartOf="@id/verticalCenterGuideline"
                 app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +76,6 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
                     android:clickable="false"
                     android:contentDescription="@string/copy"
                     android:focusable="false"
@@ -91,29 +92,37 @@
 
             </LinearLayout>
 
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/verticalCenterGuideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.3333" />
+
             <!-- save section -->
             <LinearLayout
                 android:id="@+id/saveSection"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
                 android:background="@drawable/button_design"
                 android:clickable="true"
                 android:elevation="5dp"
                 android:focusable="true"
                 android:gravity="center"
                 android:onClick="saveClicked"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:padding="10dp"
                 app:layout_constraintBottom_toBottomOf="@id/copySection"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/verticalCenterGuideline2"
                 app:layout_constraintStart_toEndOf="@id/verticalCenterGuideline"
                 app:layout_constraintTop_toTopOf="@id/copySection">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
                     android:clickable="false"
                     android:contentDescription="@string/save"
                     android:focusable="false"
@@ -122,7 +131,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="false"
+                    android:focusable="false"
                     android:text="@string/save"
                     android:textColor="@color/primaryTextOnPrimary"
                     android:textSize="18sp"
@@ -131,11 +141,51 @@
             </LinearLayout>
 
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/verticalCenterGuideline"
+                android:id="@+id/verticalCenterGuideline2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.5" />
+                app:layout_constraintGuide_percent="0.6666" />
+
+            <!-- share section -->
+            <LinearLayout
+                android:id="@+id/shareSection"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/button_design"
+                android:clickable="true"
+                android:elevation="5dp"
+                android:focusable="true"
+                android:gravity="center"
+                android:onClick="shareClicked"
+                android:orientation="vertical"
+                android:padding="10dp"
+                app:layout_constraintBottom_toBottomOf="@id/copySection"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/verticalCenterGuideline2"
+                app:layout_constraintTop_toTopOf="@id/copySection">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:contentDescription="@string/share"
+                    android:focusable="false"
+                    android:src="@drawable/share_icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:text="@string/share"
+                    android:textColor="@color/primaryTextOnPrimary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/controlText"

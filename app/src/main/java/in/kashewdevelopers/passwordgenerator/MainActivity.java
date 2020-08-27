@@ -4,9 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     String numbers = "0123456789";
     String symbols = "!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}";
 
+    // toasts
+    Toast pressBackAgainToast, savedToast, copiedToast, copyErrorToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +71,14 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
 
     // functionality
+    @SuppressLint("ShowToast")
     public void initialize() {
         password = findViewById(R.id.password);
         controlIcon = findViewById(R.id.controlIcon);
@@ -85,16 +96,27 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
 
         controls.setVisibility(View.GONE);
+
+        // toasts
+        pressBackAgainToast = Toast.makeText(this, R.string.back_press, Toast.LENGTH_SHORT);
+        pressBackAgainToast.setGravity(Gravity.CENTER, 0, 0);
+
+        savedToast = Toast.makeText(this, R.string.saved_password, Toast.LENGTH_SHORT);
+        savedToast.setGravity(Gravity.CENTER, 0, 0);
+
+        copiedToast = Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT);
+        copiedToast.setGravity(Gravity.CENTER, 0, 0);
+
+        copyErrorToast = Toast.makeText(this, R.string.copy_error, Toast.LENGTH_SHORT);
+        copyErrorToast.setGravity(Gravity.CENTER, 0, 0);
     }
 
     public void generatePassword() {
@@ -121,11 +143,27 @@ public class MainActivity extends AppCompatActivity {
 
     // handle widget clicks
     public void copyClicked(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard == null) {
+            copyErrorToast.show();
+            return;
+        }
 
+        ClipData clip = ClipData.newPlainText(getText(R.string.app_name), password.getText());
+        clipboard.setPrimaryClip(clip);
+        copyErrorToast.cancel();
+        copiedToast.show();
     }
 
     public void saveClicked(View view) {
 
+    }
+
+    public void shareClicked(View view) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, password.getText());
+        startActivity(Intent.createChooser(intent, getText(R.string.share_with)));
     }
 
     public void controlToggleClicked(View view) {
@@ -143,9 +181,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void uppercaseClicked(View view) {
-        Log.d("KashewDevelopers", "Uppercase Before = " + includeUppercase);
         includeUppercase = ((CheckBox) view).isChecked();
-        Log.d("KashewDevelopers", "Uppercase Before = " + includeUppercase + " > " + ((CheckBox) view).isChecked());
         generatePassword();
     }
 
