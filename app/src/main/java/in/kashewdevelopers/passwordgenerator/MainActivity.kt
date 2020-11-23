@@ -26,28 +26,28 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
-    lateinit var drawerToggle: ActionBarDrawerToggle
+    private lateinit var drawerToggle: ActionBarDrawerToggle
 
     // control variables
-    var minPasswordLength = 5
-    var passwordLength = 8
-    var includeUppercase = true
-    var includeLowercase = true
-    var includeNumbers = true
-    var includeSymbols = true
+    private var minPasswordLength = 5
+    private var passwordLength = 8
+    private var includeUppercase = true
+    private var includeLowercase = true
+    private var includeNumbers = true
+    private var includeSymbols = true
 
     // character set
-    var uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    var lowercaseLetters = "abcdefghijklmnopqrstuvwxyz"
-    var numbers = "0123456789"
-    var symbols = "!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}"
+    private var uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    private var lowercaseLetters = "abcdefghijklmnopqrstuvwxyz"
+    private var numbers = "0123456789"
+    private var symbols = "!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}"
 
     // toasts
-    lateinit var pressBackAgainToast: Toast
-    lateinit var savedToast: Toast
-    lateinit var copiedToast: Toast
-    lateinit var copyErrorToast: Toast
-    var backPressed = false
+    private lateinit var pressBackAgainToast: Toast
+    private lateinit var savedToast: Toast
+    private lateinit var copiedToast: Toast
+    private lateinit var copyErrorToast: Toast
+    private var backPressed = false
 
     // suggestion db
     private lateinit var dbHelper: SavedDbHelper
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
         db = dbHelper.readableDatabase
         cursor = dbHelper.get(db)
 
-        adapter = SavedAdapter(this, cursor, 0)
+        adapter = SavedAdapter(this, cursor)
 
         binding.savedList.adapter = adapter
 
@@ -309,20 +309,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setPasswordDeleteListener() {
-        adapter?.setOnDeleteClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle(R.string.delete)
-            builder.setMessage(R.string.are_u_sure)
-            builder.setNegativeButton(R.string.cancel, null)
-            builder.setPositiveButton(R.string.delete) { _, _ -> deleteSavedPasswords(it) }
-            builder.show()
-        }
+        adapter?.setOnDeleteClickListener(object : SavedAdapter.OnDeleteClickListener {
+            override fun onDeleteClickListener(password: String) {
+                val builder = AlertDialog.Builder(this@MainActivity)
+                builder.setTitle(R.string.delete)
+                builder.setMessage(R.string.are_u_sure)
+                builder.setNegativeButton(R.string.cancel, null)
+                builder.setPositiveButton(R.string.delete) { _, _ -> deleteSavedPasswords(password) }
+                builder.show()
+            }
+        })
     }
 
     private fun setPasswordClickListener() {
-        adapter?.setOnPasswordClickListener {
-            showPassword(it)
-        }
+        adapter?.setOnPasswordClickListener(object : SavedAdapter.OnPasswordClickListener {
+            override fun onPasswordClickListener(password: String) {
+                deleteSavedPasswords(password)
+            }
+        })
     }
 
 }
