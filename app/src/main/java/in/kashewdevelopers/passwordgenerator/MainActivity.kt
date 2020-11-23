@@ -324,7 +324,7 @@ class MainActivity : AppCompatActivity() {
     private fun setPasswordClickListener() {
         adapter?.setOnPasswordClickListener(object : SavedAdapter.OnPasswordClickListener {
             override fun onPasswordClickListener(password: String) {
-                deleteSavedPasswords(password)
+                showPassword(password)
             }
         })
     }
